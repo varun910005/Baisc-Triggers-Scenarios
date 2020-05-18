@@ -1,0 +1,50 @@
+//------trigger to update contact field----//
+trigger updateFieldOnContact on Account (after update) {
+   
+    if(trigger.isUpdate) // this will ensure that trigger works only when account is updated otherwise not
+     {
+           Set<Id> accountIds = new Set<Id>();  // will use this set in creating contact list.
+           Map<Id, Account> AccountMap= new Map<Id, Account>();  //this map is used to fetch values of required field from sObject.
+           
+           for(Account a: trigger.New)
+           { 
+              Account oldAccount = Trigger.oldMap.get(a.Id);
+               if(oldAccount.Industry!=a.Industry)  // this ensure that trigger will only trigger when Industry field is changed.
+                {
+                 AccountMap.put(a.Id, a);
+                 accountIds.add(a.Id);
+                 }
+           }
+           
+           System.debug('all the details related to account is now stored in map and set');
+           
+       
+       List<Contact> conList = [select AccountID, Industry__c from Contact where AccountId In: accountIds  ];
+       List<Contact> newConList = new List<Contact>();
+       
+       if(!conList.isEmpty())
+       {
+       for(Contact c : conList)  // create a for loop to update each contact one by one
+       {
+          if(AccountMap.ContainsKey(c.AccountId))   
+           {
+              c.Industry__c=AccountMap.get(c.AccountID).Industry;
+              newConList.add(c);  // this LOC will add the updated contact into new List.
+           }
+           
+       }
+        
+       System.debug('New conlist to be updated is ready to update');
+          
+           try{
+       update newConList;      //DML staement used to update the new contact list.
+           }
+          
+        catch(DMLException e)
+        {
+            System.debug('error message');
+        }
+  }
+}
+}
+
