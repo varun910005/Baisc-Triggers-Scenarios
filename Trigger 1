@@ -1,4 +1,6 @@
-//------trigger to update contact field----//
+//------trigger to update contact's particular field (here Industry field) 
+                                     whenever its parent Account's  field (same field )updated----//
+                                     
 trigger updateFieldOnContact on Account (after update) {
    
     if(trigger.isUpdate) // this will ensure that trigger works only when account is updated otherwise not
